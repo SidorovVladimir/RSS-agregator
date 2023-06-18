@@ -1,4 +1,4 @@
-name: Action-linter
+name: Github Actions
 
 on:
   - push
