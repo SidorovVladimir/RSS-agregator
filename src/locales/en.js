@@ -9,7 +9,7 @@ export default {
     form: {
       title: 'RSS aggregator',
       subtitle: 'Start reading RSS today! It\'s easy, it\'s beautiful.',
-      inputPlaceholder: 'RSS Link',
+      labelInput: 'RSS Link',
       exampleUrl: 'Example: https://ru.hexlet.io/lessons.rss',
       rssLoadSucces: 'RSS load success',
       mainButton: 'Added',
@@ -18,5 +18,8 @@ export default {
       linkButton: 'Read all',
       closeButton: 'Close',
     },
+    posts: 'Posts',
+    feeds: 'Feeds',
+    viewPost: 'View',
   },
 };

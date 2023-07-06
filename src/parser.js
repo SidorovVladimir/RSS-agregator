@@ -1,10 +1,11 @@
-export default (response) => {
+export default (response, url) => {
   try {
     const parser = new DOMParser();
     const doc = parser.parseFromString(response.data.contents, 'text/xml');
     const feed = {
       title: doc.querySelector('title').textContent,
       description: doc.querySelector('description').textContent,
+      link: url,
     };
     const feedItems = doc.querySelectorAll('item');
     const posts = [...feedItems].map((item) => ({

@@ -2,8 +2,11 @@ import renderFeedsHandler from './renderFeed.js';
 import renderErrorHandler from './renderError.js';
 import renderPostsHandler from './renderPost.js';
 import renderModalHandler from './renderModal.js';
+import translateText from './renderTranslate.js';
 
 const renderFeedbackHandler = (elements, value, i18nextInstance) => {
+  if (value !== 'rssLoadSucces') return;
+
   elements.input.classList.remove('is-invalid');
   elements.feedback.classList.remove('text-danger');
   elements.feedback.classList.add('text-success');
@@ -41,13 +44,21 @@ export default (elements, i18nextInstance, state) => (path, value) => {
       handleProcessState(elements, value, i18nextInstance);
       break;
     case 'feeds':
-      renderFeedsHandler(elements, value);
+      renderFeedsHandler(elements, i18nextInstance, value);
       break;
     case 'posts':
-      renderPostsHandler(elements, value);
+      renderPostsHandler(elements, state, i18nextInstance, value);
       break;
-    case 'currentVisitedPostId':
+    case 'uiState.currentVisitedPostId':
       renderModalHandler(elements, i18nextInstance, state);
+      break;
+    case 'lng':
+      i18nextInstance.changeLanguage(value).then(() => {
+        translateText(elements, i18nextInstance);
+        renderPostsHandler(elements, state, i18nextInstance, state.posts);
+        renderFeedsHandler(elements, i18nextInstance, state.feeds);
+        renderFeedbackHandler(elements, state.form.processState, i18nextInstance);
+      });
       break;
     default:
       break;
