@@ -79,6 +79,9 @@ const config = {
       },
     ],
   },
+  stats: {
+    warnings: false,
+  },
 };
 export default () => {
   if (isDev) {
