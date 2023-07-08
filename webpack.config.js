@@ -84,11 +84,10 @@ const config = {
   },
 };
 export default () => {
-  config.mode = 'development';
-  // if (isDev) {
-  //   config.mode = 'development';
-  // } else {
-  //   config.mode = 'production';
-  // }
+  if (isDev) {
+    config.mode = 'development';
+  } else {
+    config.mode = 'production';
+  }
   return config;
 };
