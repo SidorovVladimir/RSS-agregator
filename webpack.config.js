@@ -79,8 +79,8 @@ const config = {
       },
     ],
   },
-  stats: {
-    warnings: false,
+  performance: {
+    hints: false,
   },
 };
 export default () => {
