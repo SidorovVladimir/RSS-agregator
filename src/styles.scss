@@ -10,10 +10,6 @@
 @import "~bootstrap/scss/_list-group.scss";
 @import "~bootstrap/scss/_card.scss";
 
-:root, [data-bs-theme=light] {
-  --bs-secondary-color:#6c757d;
-}
-
 .change-lang {
   position: absolute;
   top:0;
