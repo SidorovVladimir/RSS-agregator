@@ -21,12 +21,8 @@ export default (elements, i18nextInstance, feeds) => {
 
     const itemTitle = document.createElement('h3');
     itemTitle.classList.add('h6', 'm-0');
-    // --------------
     itemTitle.setAttribute('data-id', `${feed.id}`);
-    // --------------
     itemTitle.textContent = feed.title;
-    // ------------------
-    // ------------------
 
     const itemDescription = document.createElement('p');
     itemDescription.classList.add('m-0', 'small', 'text-black-50');

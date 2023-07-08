@@ -1,9 +1,65 @@
 import * as yup from 'yup';
-import onChange from 'on-change';
 import i18next from 'i18next';
+import axios from 'axios';
+import { uniqueId } from 'lodash';
 import resources from './locales/index.js';
+import errorMessages from './locales/validationMessages.js';
 import initView from './render/view.js';
-import { loadRss, checkNewPost } from './utils.js';
+import parseRss from './parser.js';
+
+const makeProxy = (url) => {
+  const newProxy = new URL('https://allorigins.hexlet.app');
+  newProxy.pathname = '/get';
+  newProxy.searchParams.append('disableCache', 'true');
+  newProxy.searchParams.append('url', url);
+  return newProxy.href.toString();
+};
+
+const loadRss = (url) => {
+  const proxy = makeProxy(url);
+  return axios.get(proxy)
+    .then((response) => {
+      const content = response.data.contents;
+      const parseContent = parseRss(content, url);
+      const { feed, posts } = parseContent;
+      feed.id = uniqueId();
+      posts.forEach((post) => {
+        post.id = uniqueId();
+        post.feedId = feed.id;
+      });
+      return parseContent;
+    })
+    .catch((error) => {
+      const err = new Error();
+      if (error.name === 'AxiosError') {
+        err.message = 'networkError';
+      }
+      if (error.name === 'parserError') {
+        err.message = 'parserError';
+      }
+      throw err;
+    });
+};
+const updatePost = (watchState, response) => {
+  const newPosts = response.posts;
+  const uploadedTitlePosts = watchState.posts.map((post) => post.title);
+  const comparePosts = newPosts.filter((newPost) => !uploadedTitlePosts.includes(newPost.title));
+
+  if (comparePosts.length === 0) return;
+  comparePosts.forEach((post) => {
+    watchState.posts = [post, ...watchState.posts];
+  });
+};
+
+const checkNewPost = (watchState) => {
+  const request = watchState.feeds.map((feed) => loadRss(feed.link));
+  Promise.all(request)
+    .then((responses) => responses.forEach((response) => updatePost(watchState, response)))
+    .then(() => setTimeout(() => checkNewPost(watchState), 5000))
+    .catch((e) => {
+      console.error(e);
+    });
+};
 
 export default () => {
   const defaultLanguage = 'ru';
@@ -49,16 +105,9 @@ export default () => {
         posts: document.querySelector('.posts'),
       };
 
-      yup.setLocale({
-        mixed: {
-          notOneOf: 'rssDublicate',
-        },
-        string: {
-          url: 'urlValid',
-        },
-      });
+      yup.setLocale(errorMessages);
 
-      const watchState = onChange(state, initView(elements, i18nextInstance, state));
+      const watchState = initView(state, elements, i18nextInstance);
 
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();

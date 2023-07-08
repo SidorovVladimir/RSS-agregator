@@ -1,3 +1,4 @@
+import onChange from 'on-change';
 import renderFeedsHandler from './renderFeed.js';
 import renderErrorHandler from './renderError.js';
 import renderPostsHandler from './renderPost.js';
@@ -35,7 +36,7 @@ const handleProcessState = (elements, processState, i18nextInstance) => {
   }
 };
 
-export default (elements, i18nextInstance, state) => (path, value) => {
+const render = (elements, i18nextInstance, state) => (path, value) => {
   switch (path) {
     case 'form.error':
       renderErrorHandler(elements, value, i18nextInstance);
@@ -64,3 +65,5 @@ export default (elements, i18nextInstance, state) => (path, value) => {
       break;
   }
 };
+
+export default (state, elements, language) => onChange(state, render(elements, language, state));

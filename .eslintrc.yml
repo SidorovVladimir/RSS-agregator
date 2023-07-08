@@ -3,17 +3,14 @@ root: true
 
 extends:
   - "airbnb-base"
-  - "plugin:jest/recommended"
 
 parser: "@babel/eslint-parser"
 
 plugins:
-  - jest
   - babel
   
 env:
   node: true
-  jest: true
   browser: true
 
 rules:

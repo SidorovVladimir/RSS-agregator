@@ -1,11 +1,8 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const autoprefixer = require('autoprefixer');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import autoprefixer from 'autoprefixer';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 const isDev = process.env.NODE_ENV === 'development';
-
-const isProd = !isDev;
 
 const filename = (ext) => (isDev ? `[name].${ext}` : `[name].[hash].${ext}`);
 
@@ -30,19 +27,17 @@ const cssloaders = (extra) => {
   return loaders;
 };
 
-module.exports = {
-  mode: 'development',
+const config = {
   entry: './src/index.js',
   output: {
     filename: filename('js'),
-    path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html',
       minify: {
-        collapseWhitespace: isProd,
+        collapseWhitespace: !isDev,
       },
     }),
     new MiniCssExtractPlugin({
@@ -84,4 +79,12 @@ module.exports = {
       },
     ],
   },
+};
+export default () => {
+  if (isDev) {
+    config.mode = 'development';
+  } else {
+    config.mode = 'production';
+  }
+  return config;
 };

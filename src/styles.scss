@@ -1,6 +1,3 @@
-// @import "~bootstrap/scss/bootstrap";
-// @import "~bootstrap/scss/bootstrap.scss";
-
 @import "~bootstrap/scss/bootstrap-grid.scss";
 @import "~bootstrap/scss/bootstrap-reboot.scss";
 @import "~bootstrap/scss/bootstrap-utilities.scss";
@@ -13,16 +10,15 @@
 @import "~bootstrap/scss/_list-group.scss";
 @import "~bootstrap/scss/_card.scss";
 
-
-.text-muted {
-    color: #6c757d !important;
-};
+:root, [data-bs-theme=light] {
+  --bs-secondary-color:#6c757d;
+}
 
 .change-lang {
-    position: absolute;
-    top:0;
-    right: 0;
-    background-color: rgb(119, 119, 128);
-    color: white;
-    border-radius: 3px;
+  position: absolute;
+  top:0;
+  right: 0;
+  background-color: rgb(119, 119, 128);
+  color: white;
+  border-radius: 3px;
 }
