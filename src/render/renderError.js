@@ -17,7 +17,7 @@ const renderDowloadError = (elements, i18nextInstance, error) => {
   switch (error) {
     case null: return;
     case 'networkError':
-      feedback.textContent = i18nextInstance.t('error.networkError');
+      feedback.textContent = i18nextInstance.t('errors.networkError');
       break;
     case 'parserError':
       feedback.textContent = i18nextInstance.t('errors.parserError');
