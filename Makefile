@@ -3,8 +3,6 @@ install:
 lint:
 	npx eslint .
 develop:
-	NODE_ENV=development npx webpack-dev-server --open
+	npx webpack serve
 build:
 	NODE_ENV=production npx webpack
-dev:
-	NODE_ENV=development npx webpack

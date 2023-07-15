@@ -14,8 +14,11 @@ export default (elements, state, i18nextInstance, posts) => {
 
   const listGroup = document.createElement('ul');
   listGroup.classList.add('list-group', 'border-0', 'rounded-0');
+  const filteredPosts = posts.filter((post) => post.feedId === state.uiState.activeFeed);
 
-  posts.forEach((post) => {
+  const activePosts = (filteredPosts.length === 0) ? posts : filteredPosts;
+
+  activePosts.forEach((post) => {
     const listGroupItem = document.createElement('li');
     listGroupItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 
@@ -24,6 +27,7 @@ export default (elements, state, i18nextInstance, posts) => {
     linkItem.setAttribute('target', '_blank');
     linkItem.setAttribute('rel', 'noopener noreferrer');
     linkItem.setAttribute('data-id', `${post.id}`);
+    linkItem.setAttribute('data-feed_id', `${post.feedId}`);
     linkItem.textContent = post.title;
 
     if (state.uiState.visitedPostsId.includes(post.id)) {

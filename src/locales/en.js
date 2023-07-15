@@ -5,6 +5,7 @@ export default {
       rssDublicate: 'RSS already exists',
       parserError: 'Resource does not include valid RSS',
       networkError: 'Network error',
+      unknownError: 'Unknown Error',
     },
     form: {
       title: 'RSS aggregator',

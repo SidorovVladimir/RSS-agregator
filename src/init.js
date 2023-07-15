@@ -3,21 +3,36 @@ import i18next from 'i18next';
 import axios from 'axios';
 import { uniqueId } from 'lodash';
 import resources from './locales/index.js';
-import errorMessages from './locales/validationMessages.js';
+import customErrorMessage from './locales/customErrorMessage.js';
 import initView from './render/view.js';
 import parseRss from './parser.js';
 
+const defaultLanguage = 'ru';
+const timeUpdate = 5000;
+
 const makeProxy = (url) => {
-  const newProxy = new URL('https://allorigins.hexlet.app');
-  newProxy.pathname = '/get';
-  newProxy.searchParams.append('disableCache', 'true');
-  newProxy.searchParams.append('url', url);
-  return newProxy.href.toString();
+  const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
+  urlWithProxy.searchParams.append('disableCache', 'true');
+  urlWithProxy.searchParams.append('url', url);
+  return urlWithProxy.toString();
 };
 
-const loadRss = (url) => {
+const handlerError = (error) => {
+  switch (error.name) {
+    case 'AxiosError':
+      return 'networkError';
+    case 'ParserError':
+      return 'parserError';
+    default:
+      return 'unknownError';
+  }
+};
+
+const loadRss = (url, watchState) => {
+  watchState.loadingProcess.dowloadStatus = 'loading';
+  watchState.loadingProcess.error = null;
   const proxy = makeProxy(url);
-  return axios.get(proxy)
+  const data = axios.get(proxy)
     .then((response) => {
       const content = response.data.contents;
       const parseContent = parseRss(content, url);
@@ -27,42 +42,54 @@ const loadRss = (url) => {
         post.id = uniqueId();
         post.feedId = feed.id;
       });
-      return parseContent;
+      watchState.loadingProcess.dowloadStatus = 'success';
+      watchState.loadingProcess.error = null;
+      watchState.feeds = [feed, ...watchState.feeds];
+      watchState.posts = [...posts, ...watchState.posts];
     })
     .catch((error) => {
-      const err = new Error();
-      if (error.name === 'AxiosError') {
-        err.message = 'networkError';
-      }
-      if (error.name === 'parserError') {
-        err.message = 'parserError';
-      }
-      throw err;
+      watchState.loadingProcess.error = handlerError(error);
+      watchState.loadingProcess.dowloadStatus = 'failed';
     });
+  return data;
 };
-const updatePost = (watchState, response) => {
-  const newPosts = response.posts;
-  const uploadedTitlePosts = watchState.posts.map((post) => post.title);
-  const comparePosts = newPosts.filter((newPost) => !uploadedTitlePosts.includes(newPost.title));
 
-  if (comparePosts.length === 0) return;
-  comparePosts.forEach((post) => {
-    watchState.posts = [post, ...watchState.posts];
+const updatePost = (watchState) => {
+  const requests = watchState.feeds.map((feed) => {
+    const { link, id } = feed;
+    const request = axios.get(makeProxy(link))
+      .then((response) => {
+        const content = response.data.contents;
+        const parseContent = parseRss(content, link);
+        const { posts } = parseContent;
+        const uploadedTitlePosts = watchState.posts.map((post) => post.title);
+        const newPosts = posts.filter((newPost) => !uploadedTitlePosts.includes(newPost.title));
+        newPosts.forEach((post) => {
+          post.id = uniqueId();
+          post.feedId = id;
+        });
+        watchState.posts = [...newPosts, ...watchState.posts];
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+    return request;
   });
+  return Promise.all(requests)
+    .then(() => setTimeout(() => updatePost(watchState), timeUpdate));
 };
 
-const checkNewPost = (watchState) => {
-  const request = watchState.feeds.map((feed) => loadRss(feed.link));
-  Promise.all(request)
-    .then((responses) => responses.forEach((response) => updatePost(watchState, response)))
-    .then(() => setTimeout(() => checkNewPost(watchState), 5000))
-    .catch((e) => {
-      console.error(e);
-    });
+const validate = (url, urls) => {
+  const schema = yup.string()
+    .required()
+    .url()
+    .notOneOf(urls);
+  return schema.validate(url)
+    .then(() => null)
+    .catch((error) => error);
 };
 
 export default () => {
-  const defaultLanguage = 'ru';
   const i18nextInstance = i18next.createInstance();
 
   i18nextInstance.init({
@@ -74,14 +101,18 @@ export default () => {
       const state = {
         lng: defaultLanguage,
         form: {
-          processState: 'filling',
-          rssLink: [],
+          validationStatus: '',
+          error: null,
+        },
+        loadingProcess: {
+          dowloadStatus: '',
           error: null,
         },
         feeds: [],
         posts: [],
         uiState: {
-          currentVisitedPostId: '',
+          activeFeed: '',
+          postId: '',
           visitedPostsId: [],
         },
       };
@@ -105,49 +136,50 @@ export default () => {
         posts: document.querySelector('.posts'),
       };
 
-      yup.setLocale(errorMessages);
+      yup.setLocale(customErrorMessage);
 
       const watchState = initView(state, elements, i18nextInstance);
 
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
-        const currentUrl = formData.get('url').trim();
+        const currentUrl = formData.get('url');
 
-        const schema = yup.string()
-          .required()
-          .url()
-          .notOneOf(state.form.rssLink);
+        const urls = state.feeds.map((feed) => feed.link);
 
-        schema.validate(currentUrl)
-          .then(() => {
-            watchState.form.processState = 'sending';
-            return loadRss(currentUrl);
-          })
-          .then((response) => {
-            const { feed, posts } = response;
-            watchState.feeds = [feed, ...watchState.feeds];
-            watchState.posts = [...posts, ...watchState.posts];
-            watchState.form.processState = 'rssLoadSucces';
-            watchState.form.rssLink.push(currentUrl);
+        validate(currentUrl, urls)
+          .then((error) => {
+            if (error) {
+              watchState.form.validationStatus = false;
+              watchState.form.error = error.message;
+              return;
+            }
+            watchState.form.validationStatus = true;
             state.form.error = null;
-            return response;
-          })
-          .then(() => setTimeout(() => checkNewPost(watchState), 5000))
-          .catch((error) => {
-            watchState.form.processState = 'filling';
-            watchState.form.error = error.message;
+            loadRss(currentUrl, watchState);
           });
       });
+
+      setTimeout(() => updatePost(watchState), timeUpdate);
 
       elements.posts.addEventListener('click', (e) => {
         const currentTarget = e.target;
         if (currentTarget.nodeName === 'A' || currentTarget.nodeName === 'BUTTON') {
-          watchState.uiState.currentVisitedPostId = currentTarget.dataset.id;
+          watchState.uiState.postId = currentTarget.dataset.id;
           state.uiState.visitedPostsId = [
             currentTarget.dataset.id,
             ...state.uiState.visitedPostsId,
           ];
+        }
+      });
+      elements.feeds.addEventListener('click', (e) => {
+        const currentTarget = e.target;
+        if (currentTarget.nodeName === 'H2') {
+          watchState.uiState.activeFeed = '';
+        }
+
+        if (currentTarget.nodeName === 'H3') {
+          watchState.uiState.activeFeed = currentTarget.dataset.id;
         }
       });
 

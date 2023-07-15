@@ -46,6 +46,7 @@ const config = {
   ],
 
   devServer: {
+    open: true,
     port: 5000,
     hot: isDev,
   },
@@ -84,10 +85,6 @@ const config = {
   },
 };
 export default () => {
-  if (isDev) {
-    config.mode = 'development';
-  } else {
-    config.mode = 'production';
-  }
+  config.mode = process.env.NODE_ENV || 'development';
   return config;
 };

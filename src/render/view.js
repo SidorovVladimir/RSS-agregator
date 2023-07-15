@@ -1,64 +1,83 @@
 import onChange from 'on-change';
-import renderFeedsHandler from './renderFeed.js';
-import renderErrorHandler from './renderError.js';
-import renderPostsHandler from './renderPost.js';
-import renderModalHandler from './renderModal.js';
-import translateText from './renderTranslate.js';
+import renderFeeds from './renderFeed.js';
+import { renderFormError, renderDowloadError } from './renderError.js';
+import renderPosts from './renderPost.js';
+import renderModal from './renderModal.js';
+import renderTranslate from './renderTranslate.js';
 
-const renderFeedbackHandler = (elements, value, i18nextInstance) => {
-  if (value !== 'rssLoadSucces') return;
-
-  elements.input.classList.remove('is-invalid');
-  elements.feedback.classList.remove('text-danger');
-  elements.feedback.classList.add('text-success');
-  elements.input.disabled = false;
-  elements.mainButton.disabled = false;
-  elements.feedback.textContent = i18nextInstance.t(`form.${value}`);
-  elements.form.reset();
-  elements.input.focus();
+const handleFormStatus = (elements, status) => {
+  const { feedback, input } = elements;
+  if (!status) {
+    input.classList.add('is-invalid');
+    feedback.classList.add('text-danger');
+  }
 };
 
-const handleProcessState = (elements, processState, i18nextInstance) => {
-  switch (processState) {
-    case 'filling':
-      elements.input.disabled = false;
-      elements.mainButton.disabled = false;
+const handleDowloadStatus = (elements, i18nextInstance, status) => {
+  const {
+    form,
+    mainButton,
+    feedback,
+    input,
+  } = elements;
+  switch (status) {
+    case 'loading':
+      feedback.textContent = '';
+      feedback.classList.add('text-success');
+      feedback.classList.remove('text-danger');
+      input.classList.remove('is-invalid');
+      mainButton.disabled = true;
+      input.disabled = true;
       break;
-    case 'sending':
-      elements.mainButton.disabled = true;
-      elements.input.disabled = true;
+    case 'success':
+      mainButton.disabled = false;
+      input.disabled = false;
+      feedback.textContent = i18nextInstance.t('form.rssLoadSucces');
+      form.reset();
+      input.focus();
       break;
-    case 'rssLoadSucces':
-      renderFeedbackHandler(elements, processState, i18nextInstance);
+    case 'failed':
+      mainButton.disabled = false;
+      input.disabled = false;
+      input.classList.add('is-invalid');
+      feedback.classList.add('text-danger');
       break;
     default:
-      throw new Error(`Unknown process ${processState}`);
+      break;
   }
 };
 
 const render = (elements, i18nextInstance, state) => (path, value) => {
   switch (path) {
-    case 'form.error':
-      renderErrorHandler(elements, value, i18nextInstance);
+    case 'form.validationStatus':
+      handleFormStatus(elements, value);
       break;
-    case 'form.processState':
-      handleProcessState(elements, value, i18nextInstance);
+    case 'form.error':
+      renderFormError(elements, i18nextInstance, value);
+      break;
+    case 'loadingProcess.dowloadStatus':
+      handleDowloadStatus(elements, i18nextInstance, value);
+      break;
+    case 'loadingProcess.error':
+      renderDowloadError(elements, i18nextInstance, value);
       break;
     case 'feeds':
-      renderFeedsHandler(elements, i18nextInstance, value);
+      renderFeeds(elements, i18nextInstance, value);
       break;
     case 'posts':
-      renderPostsHandler(elements, state, i18nextInstance, value);
+      renderPosts(elements, state, i18nextInstance, value);
       break;
-    case 'uiState.currentVisitedPostId':
-      renderModalHandler(elements, i18nextInstance, state);
+    case 'uiState.activeFeed':
+      renderPosts(elements, state, i18nextInstance, state.posts);
+      break;
+    case 'uiState.postId':
+      renderModal(elements, i18nextInstance, state);
       break;
     case 'lng':
       i18nextInstance.changeLanguage(value).then(() => {
-        translateText(elements, i18nextInstance);
-        renderPostsHandler(elements, state, i18nextInstance, state.posts);
-        renderFeedsHandler(elements, i18nextInstance, state.feeds);
-        renderFeedbackHandler(elements, state.form.processState, i18nextInstance);
+        renderTranslate(elements, i18nextInstance);
+        renderPosts(elements, state, i18nextInstance, state.posts);
+        renderFeeds(elements, i18nextInstance, state.feeds);
       });
       break;
     default:
