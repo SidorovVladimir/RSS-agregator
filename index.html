@@ -22,10 +22,15 @@
     </div>
     <main class="flex-grow-1">
       <section class="container-fluid bg-dark p-5">
-        <select class="change-lang">
-          <option class="ru" value="ru">RU</option>
-          <option class="en" value="en">EN</option>
-        </select>
+        <div class="btn-group position-absolute top-0 start-0">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Язык
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item active" data-lng = "ru" href="#">ru</a></li>
+            <li><a class="dropdown-item" data-lng = "en" href="#">en</a></li>
+          </ul>
+        </div>
         <div class="row">
           <div class="col-md-10 col-lg-8 mx-auto text-white">
             <h1 class="display-3 mb-0">RSS агрегатор</h1>

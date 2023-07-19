@@ -3,6 +3,7 @@
 @import "~bootstrap/scss/bootstrap-utilities.scss";
 @import "~bootstrap/scss/_modal.scss";
 @import "~bootstrap/scss/_buttons.scss";
+@import "~bootstrap/scss/_dropdown.scss";
 @import "~bootstrap/scss/_forms.scss";
 @import "~bootstrap/scss/_variables.scss";
 @import "~bootstrap/scss/_type.scss";
@@ -10,11 +11,6 @@
 @import "~bootstrap/scss/_list-group.scss";
 @import "~bootstrap/scss/_card.scss";
 
-.change-lang {
-  position: absolute;
-  top:0;
-  right: 0;
-  background-color: rgb(119, 119, 128);
-  color: white;
-  border-radius: 3px;
-}
+.active-feed {
+  text-decoration: underline;
+};

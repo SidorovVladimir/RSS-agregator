@@ -16,7 +16,7 @@ const handleFormStatus = (elements, status) => {
 const handleDowloadStatus = (elements, i18nextInstance, status) => {
   const {
     form,
-    mainButton,
+    submit,
     feedback,
     input,
   } = elements;
@@ -26,18 +26,18 @@ const handleDowloadStatus = (elements, i18nextInstance, status) => {
       feedback.classList.add('text-success');
       feedback.classList.remove('text-danger');
       input.classList.remove('is-invalid');
-      mainButton.disabled = true;
+      submit.disabled = true;
       input.disabled = true;
       break;
     case 'success':
-      mainButton.disabled = false;
+      submit.disabled = false;
       input.disabled = false;
       feedback.textContent = i18nextInstance.t('form.rssLoadSucces');
       form.reset();
       input.focus();
       break;
     case 'failed':
-      mainButton.disabled = false;
+      submit.disabled = false;
       input.disabled = false;
       input.classList.add('is-invalid');
       feedback.classList.add('text-danger');
@@ -47,15 +47,15 @@ const handleDowloadStatus = (elements, i18nextInstance, status) => {
   }
 };
 
-const render = (elements, i18nextInstance, state) => (path, value) => {
+const render = (elements, i18nextInstance, initialState) => (path, value) => {
   switch (path) {
-    case 'form.validationStatus':
+    case 'form.isValid':
       handleFormStatus(elements, value);
       break;
     case 'form.error':
       renderFormError(elements, i18nextInstance, value);
       break;
-    case 'loadingProcess.dowloadStatus':
+    case 'loadingProcess.status':
       handleDowloadStatus(elements, i18nextInstance, value);
       break;
     case 'loadingProcess.error':
@@ -65,19 +65,19 @@ const render = (elements, i18nextInstance, state) => (path, value) => {
       renderFeeds(elements, i18nextInstance, value);
       break;
     case 'posts':
-      renderPosts(elements, state, i18nextInstance, value);
+      renderPosts(elements, initialState, i18nextInstance, value);
       break;
     case 'uiState.activeFeed':
-      renderPosts(elements, state, i18nextInstance, state.posts);
+      renderPosts(elements, initialState, i18nextInstance, initialState.posts);
       break;
     case 'uiState.postId':
-      renderModal(elements, i18nextInstance, state);
+      renderModal(elements, i18nextInstance, initialState);
       break;
     case 'lng':
       i18nextInstance.changeLanguage(value).then(() => {
         renderTranslate(elements, i18nextInstance);
-        renderPosts(elements, state, i18nextInstance, state.posts);
-        renderFeeds(elements, i18nextInstance, state.feeds);
+        renderPosts(elements, initialState, i18nextInstance, initialState.posts);
+        renderFeeds(elements, i18nextInstance, initialState.feeds);
       });
       break;
     default:
@@ -85,4 +85,7 @@ const render = (elements, i18nextInstance, state) => (path, value) => {
   }
 };
 
-export default (state, elements, language) => onChange(state, render(elements, language, state));
+export default (initialState, elements, language) => onChange(
+  initialState,
+  render(elements, language, initialState),
+);

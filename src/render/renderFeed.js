@@ -9,7 +9,7 @@ export default (elements, i18nextInstance, feeds) => {
   cardBody.classList.add('card-body');
 
   const cardTitle = document.createElement('h2');
-  cardTitle.classList.add('card-title', 'h4');
+  cardTitle.classList.add('card-title', 'h4', 'active-feed');
   cardTitle.textContent = i18nextInstance.t('feeds');
 
   const listGroup = document.createElement('ul');

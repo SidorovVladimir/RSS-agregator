@@ -1,4 +1,4 @@
-export default (elements, state, i18nextInstance, posts) => {
+export default (elements, initialState, i18nextInstance, posts) => {
   if (posts.length === 0) return;
 
   elements.posts.innerHTML = '';
@@ -14,7 +14,7 @@ export default (elements, state, i18nextInstance, posts) => {
 
   const listGroup = document.createElement('ul');
   listGroup.classList.add('list-group', 'border-0', 'rounded-0');
-  const filteredPosts = posts.filter((post) => post.feedId === state.uiState.activeFeed);
+  const filteredPosts = posts.filter((post) => post.feedId === initialState.uiState.activeFeed);
 
   const activePosts = (filteredPosts.length === 0) ? posts : filteredPosts;
 
@@ -30,7 +30,7 @@ export default (elements, state, i18nextInstance, posts) => {
     linkItem.setAttribute('data-feed_id', `${post.feedId}`);
     linkItem.textContent = post.title;
 
-    if (state.uiState.visitedPostsId.includes(post.id)) {
+    if (initialState.uiState.visitedPostsId.has(post.id)) {
       linkItem.classList.add('fw-normal', 'link-secondary');
     } else {
       linkItem.classList.add('fw-bold');

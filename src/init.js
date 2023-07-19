@@ -9,6 +9,7 @@ import parseRss from './parser.js';
 
 const defaultLanguage = 'ru';
 const timeUpdate = 5000;
+const timeWaiting = 10000;
 
 const makeProxy = (url) => {
   const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
@@ -29,10 +30,14 @@ const handlerError = (error) => {
 };
 
 const loadRss = (url, watchState) => {
-  watchState.loadingProcess.dowloadStatus = 'loading';
+  watchState.loadingProcess.status = 'loading';
   watchState.loadingProcess.error = null;
   const proxy = makeProxy(url);
-  const data = axios.get(proxy)
+  const data = axios({
+    metod: 'get',
+    url: proxy,
+    timeout: timeWaiting,
+  })
     .then((response) => {
       const content = response.data.contents;
       const parseContent = parseRss(content, url);
@@ -42,14 +47,14 @@ const loadRss = (url, watchState) => {
         post.id = uniqueId();
         post.feedId = feed.id;
       });
-      watchState.loadingProcess.dowloadStatus = 'success';
+      watchState.loadingProcess.status = 'success';
       watchState.loadingProcess.error = null;
       watchState.feeds = [feed, ...watchState.feeds];
       watchState.posts = [...posts, ...watchState.posts];
     })
     .catch((error) => {
       watchState.loadingProcess.error = handlerError(error);
-      watchState.loadingProcess.dowloadStatus = 'failed';
+      watchState.loadingProcess.status = 'failed';
     });
   return data;
 };
@@ -62,8 +67,8 @@ const updatePost = (watchState) => {
         const content = response.data.contents;
         const parseContent = parseRss(content, link);
         const { posts } = parseContent;
-        const uploadedTitlePosts = watchState.posts.map((post) => post.title);
-        const newPosts = posts.filter((newPost) => !uploadedTitlePosts.includes(newPost.title));
+        const titles = watchState.posts.map((post) => post.title);
+        const newPosts = posts.filter((newPost) => !titles.includes(newPost.title));
         newPosts.forEach((post) => {
           post.id = uniqueId();
           post.feedId = id;
@@ -98,14 +103,14 @@ export default () => {
     resources,
   })
     .then(() => {
-      const state = {
+      const initialState = {
         lng: defaultLanguage,
         form: {
-          validationStatus: '',
+          isValid: '',
           error: null,
         },
         loadingProcess: {
-          dowloadStatus: '',
+          status: '',
           error: null,
         },
         feeds: [],
@@ -113,14 +118,16 @@ export default () => {
         uiState: {
           activeFeed: '',
           postId: '',
-          visitedPostsId: [],
+          visitedPostsId: new Set(),
         },
       };
 
       const elements = {
+        languageButton: document.querySelector('.dropdown-toggle'),
+        languageMenu: document.querySelector('.dropdown-menu'),
         form: document.querySelector('.rss-form'),
         input: document.querySelector('.form-control'),
-        mainButton: document.querySelector('button[type="submit"]'),
+        submit: document.querySelector('button[type="submit"]'),
         feedback: document.querySelector('.feedback'),
         title: document.querySelector('section h1'),
         subtitle: document.querySelector('section p'),
@@ -138,25 +145,25 @@ export default () => {
 
       yup.setLocale(customErrorMessage);
 
-      const watchState = initView(state, elements, i18nextInstance);
+      const watchState = initView(initialState, elements, i18nextInstance);
 
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
-        const currentUrl = formData.get('url');
+        const url = formData.get('url');
 
-        const urls = state.feeds.map((feed) => feed.link);
+        const urls = initialState.feeds.map((feed) => feed.link);
 
-        validate(currentUrl, urls)
+        validate(url, urls)
           .then((error) => {
             if (error) {
-              watchState.form.validationStatus = false;
+              watchState.form.isValid = false;
               watchState.form.error = error.message;
               return;
             }
-            watchState.form.validationStatus = true;
-            state.form.error = null;
-            loadRss(currentUrl, watchState);
+            watchState.form.isValid = true;
+            initialState.form.error = null;
+            loadRss(url, watchState);
           });
       });
 
@@ -164,28 +171,35 @@ export default () => {
 
       elements.posts.addEventListener('click', (e) => {
         const currentTarget = e.target;
-        if (currentTarget.nodeName === 'A' || currentTarget.nodeName === 'BUTTON') {
+        if (currentTarget.dataset.id) {
           watchState.uiState.postId = currentTarget.dataset.id;
-          state.uiState.visitedPostsId = [
-            currentTarget.dataset.id,
-            ...state.uiState.visitedPostsId,
-          ];
+          initialState.uiState.visitedPostsId.add(currentTarget.dataset.id);
         }
       });
+
       elements.feeds.addEventListener('click', (e) => {
+        const activeFeed = elements.feeds.querySelector('.active-feed');
         const currentTarget = e.target;
+
         if (currentTarget.nodeName === 'H2') {
+          activeFeed.classList.remove('active-feed');
+          currentTarget.classList.add('active-feed');
           watchState.uiState.activeFeed = '';
         }
 
         if (currentTarget.nodeName === 'H3') {
+          activeFeed.classList.remove('active-feed');
+          currentTarget.classList.add('active-feed');
           watchState.uiState.activeFeed = currentTarget.dataset.id;
         }
       });
 
-      const selectedLng = document.querySelector('.change-lang');
-      selectedLng.addEventListener('click', () => {
-        watchState.lng = selectedLng.value;
+      elements.languageMenu.addEventListener('click', (e) => {
+        const activeLanguage = elements.languageMenu.querySelector('.active');
+        const currentLanguage = e.target;
+        activeLanguage.classList.remove('active');
+        currentLanguage.classList.add('active');
+        watchState.lng = currentLanguage.dataset.lng;
       });
     });
 };
