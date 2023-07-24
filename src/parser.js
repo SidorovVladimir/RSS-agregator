@@ -1,4 +1,4 @@
-export default (content, url) => {
+export default (content) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, 'text/xml');
   if (doc.querySelector('parsererror')) {
@@ -9,7 +9,6 @@ export default (content, url) => {
   const feed = {
     title: doc.querySelector('title').textContent,
     description: doc.querySelector('description').textContent,
-    link: url,
   };
   const feedItems = doc.querySelectorAll('item');
   const posts = [...feedItems].map((item) => ({

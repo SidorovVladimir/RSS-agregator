@@ -1,19 +1,25 @@
 import onChange from 'on-change';
 import renderFeeds from './renderFeed.js';
-import { renderFormError, renderDowloadError } from './renderError.js';
 import renderPosts from './renderPost.js';
 import renderModal from './renderModal.js';
 import renderTranslate from './renderTranslate.js';
 
-const handleFormStatus = (elements, status) => {
+const handleForm = (elements, i18nextInstance, value) => {
+  const { isValid, error } = value;
   const { feedback, input } = elements;
-  if (!status) {
+  if (!isValid) {
     input.classList.add('is-invalid');
     feedback.classList.add('text-danger');
+    feedback.textContent = i18nextInstance.t(`errors.${error}`);
+    return;
   }
+  input.classList.remove('is-invalid');
+  feedback.classList.remove('text-danger');
+  feedback.textContent = '';
 };
 
-const handleDowloadStatus = (elements, i18nextInstance, status) => {
+const handleLoadingProcess = (elements, i18nextInstance, value) => {
+  const { status, error } = value;
   const {
     form,
     submit,
@@ -22,9 +28,7 @@ const handleDowloadStatus = (elements, i18nextInstance, status) => {
   } = elements;
   switch (status) {
     case 'loading':
-      feedback.textContent = '';
-      feedback.classList.add('text-success');
-      feedback.classList.remove('text-danger');
+      feedback.classList.remove('text-success');
       input.classList.remove('is-invalid');
       submit.disabled = true;
       input.disabled = true;
@@ -32,6 +36,7 @@ const handleDowloadStatus = (elements, i18nextInstance, status) => {
     case 'success':
       submit.disabled = false;
       input.disabled = false;
+      feedback.classList.add('text-success');
       feedback.textContent = i18nextInstance.t('form.rssLoadSucces');
       form.reset();
       input.focus();
@@ -41,6 +46,7 @@ const handleDowloadStatus = (elements, i18nextInstance, status) => {
       input.disabled = false;
       input.classList.add('is-invalid');
       feedback.classList.add('text-danger');
+      feedback.textContent = i18nextInstance.t(`errors.${error}`);
       break;
     default:
       break;
@@ -49,17 +55,11 @@ const handleDowloadStatus = (elements, i18nextInstance, status) => {
 
 const render = (elements, i18nextInstance, initialState) => (path, value) => {
   switch (path) {
-    case 'form.isValid':
-      handleFormStatus(elements, value);
+    case 'form':
+      handleForm(elements, i18nextInstance, value);
       break;
-    case 'form.error':
-      renderFormError(elements, i18nextInstance, value);
-      break;
-    case 'loadingProcess.status':
-      handleDowloadStatus(elements, i18nextInstance, value);
-      break;
-    case 'loadingProcess.error':
-      renderDowloadError(elements, i18nextInstance, value);
+    case 'loadingProcess':
+      handleLoadingProcess(elements, i18nextInstance, value);
       break;
     case 'feeds':
       renderFeeds(elements, i18nextInstance, value);
@@ -67,17 +67,16 @@ const render = (elements, i18nextInstance, initialState) => (path, value) => {
     case 'posts':
       renderPosts(elements, initialState, i18nextInstance, value);
       break;
-    case 'uiState.activeFeed':
-      renderPosts(elements, initialState, i18nextInstance, initialState.posts);
-      break;
     case 'uiState.postId':
       renderModal(elements, i18nextInstance, initialState);
       break;
     case 'lng':
       i18nextInstance.changeLanguage(value).then(() => {
-        renderTranslate(elements, i18nextInstance);
+        renderTranslate(elements, i18nextInstance, value);
         renderPosts(elements, initialState, i18nextInstance, initialState.posts);
         renderFeeds(elements, i18nextInstance, initialState.feeds);
+        handleForm(elements, i18nextInstance, initialState.form);
+        handleLoadingProcess(elements, i18nextInstance, initialState.loadingProcess);
       });
       break;
     default:

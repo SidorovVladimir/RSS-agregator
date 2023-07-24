@@ -14,11 +14,8 @@ export default (elements, initialState, i18nextInstance, posts) => {
 
   const listGroup = document.createElement('ul');
   listGroup.classList.add('list-group', 'border-0', 'rounded-0');
-  const filteredPosts = posts.filter((post) => post.feedId === initialState.uiState.activeFeed);
 
-  const activePosts = (filteredPosts.length === 0) ? posts : filteredPosts;
-
-  activePosts.forEach((post) => {
+  posts.forEach((post) => {
     const listGroupItem = document.createElement('li');
     listGroupItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 

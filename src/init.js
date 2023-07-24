@@ -9,7 +9,7 @@ import parseRss from './parser.js';
 
 const defaultLanguage = 'ru';
 const timeUpdate = 5000;
-const timeWaiting = 10000;
+const timeout = 10000;
 
 const makeProxy = (url) => {
   const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
@@ -30,43 +30,39 @@ const handlerError = (error) => {
 };
 
 const loadRss = (url, watchState) => {
-  watchState.loadingProcess.status = 'loading';
-  watchState.loadingProcess.error = null;
+  watchState.loadingProcess = { status: 'loading', error: null };
   const proxy = makeProxy(url);
   const data = axios({
     metod: 'get',
     url: proxy,
-    timeout: timeWaiting,
+    timeout,
   })
     .then((response) => {
-      const content = response.data.contents;
-      const parseContent = parseRss(content, url);
-      const { feed, posts } = parseContent;
+      const content = parseRss(response.data.contents);
+      const { feed, posts } = content;
+      feed.url = url;
       feed.id = uniqueId();
       posts.forEach((post) => {
         post.id = uniqueId();
         post.feedId = feed.id;
       });
-      watchState.loadingProcess.status = 'success';
-      watchState.loadingProcess.error = null;
+      watchState.loadingProcess = { status: 'success', error: null };
       watchState.feeds = [feed, ...watchState.feeds];
       watchState.posts = [...posts, ...watchState.posts];
     })
     .catch((error) => {
-      watchState.loadingProcess.error = handlerError(error);
-      watchState.loadingProcess.status = 'failed';
+      watchState.loadingProcess = { error: handlerError(error), status: 'failed' };
     });
   return data;
 };
 
 const updatePost = (watchState) => {
   const requests = watchState.feeds.map((feed) => {
-    const { link, id } = feed;
-    const request = axios.get(makeProxy(link))
+    const { url, id } = feed;
+    const request = axios.get(makeProxy(url))
       .then((response) => {
-        const content = response.data.contents;
-        const parseContent = parseRss(content, link);
-        const { posts } = parseContent;
+        const content = parseRss(response.data.contents);
+        const { posts } = content;
         const titles = watchState.posts.map((post) => post.title);
         const newPosts = posts.filter((newPost) => !titles.includes(newPost.title));
         newPosts.forEach((post) => {
@@ -106,7 +102,7 @@ export default () => {
       const initialState = {
         lng: defaultLanguage,
         form: {
-          isValid: '',
+          isValid: true,
           error: null,
         },
         loadingProcess: {
@@ -116,7 +112,6 @@ export default () => {
         feeds: [],
         posts: [],
         uiState: {
-          activeFeed: '',
           postId: '',
           visitedPostsId: new Set(),
         },
@@ -152,17 +147,15 @@ export default () => {
         const formData = new FormData(event.target);
         const url = formData.get('url');
 
-        const urls = initialState.feeds.map((feed) => feed.link);
+        const urls = initialState.feeds.map((feed) => feed.url);
 
         validate(url, urls)
           .then((error) => {
             if (error) {
-              watchState.form.isValid = false;
-              watchState.form.error = error.message;
+              watchState.form = { isValid: false, error: error.message };
               return;
             }
-            watchState.form.isValid = true;
-            initialState.form.error = null;
+            watchState.form = { isValid: true, error: null };
             loadRss(url, watchState);
           });
       });
@@ -170,36 +163,18 @@ export default () => {
       setTimeout(() => updatePost(watchState), timeUpdate);
 
       elements.posts.addEventListener('click', (e) => {
-        const currentTarget = e.target;
-        if (currentTarget.dataset.id) {
-          watchState.uiState.postId = currentTarget.dataset.id;
-          initialState.uiState.visitedPostsId.add(currentTarget.dataset.id);
-        }
-      });
-
-      elements.feeds.addEventListener('click', (e) => {
-        const activeFeed = elements.feeds.querySelector('.active-feed');
-        const currentTarget = e.target;
-
-        if (currentTarget.nodeName === 'H2') {
-          activeFeed.classList.remove('active-feed');
-          currentTarget.classList.add('active-feed');
-          watchState.uiState.activeFeed = '';
-        }
-
-        if (currentTarget.nodeName === 'H3') {
-          activeFeed.classList.remove('active-feed');
-          currentTarget.classList.add('active-feed');
-          watchState.uiState.activeFeed = currentTarget.dataset.id;
+        const { id } = e.target.dataset;
+        if (id) {
+          watchState.uiState.postId = id;
+          initialState.uiState.visitedPostsId.add(id);
         }
       });
 
       elements.languageMenu.addEventListener('click', (e) => {
-        const activeLanguage = elements.languageMenu.querySelector('.active');
-        const currentLanguage = e.target;
-        activeLanguage.classList.remove('active');
-        currentLanguage.classList.add('active');
-        watchState.lng = currentLanguage.dataset.lng;
+        const { lng } = e.target.dataset;
+        if (lng) {
+          watchState.lng = lng;
+        }
       });
     });
 };
