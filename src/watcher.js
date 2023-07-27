@@ -1,11 +1,11 @@
 import onChange from 'on-change';
-import renderFeeds from './renderFeed.js';
-import renderPosts from './renderPost.js';
-import renderModal from './renderModal.js';
-import renderTranslate from './renderTranslate.js';
+import renderFeeds from './renders/renderFeed.js';
+import renderPosts from './renders/renderPost.js';
+import renderModal from './renders/renderModal.js';
+import renderTranslate from './renders/renderTranslate.js';
 
-const handleForm = (elements, i18nextInstance, value) => {
-  const { isValid, error } = value;
+const handleForm = (elements, initialState, i18nextInstance) => {
+  const { isValid, error } = initialState.form;
   const { feedback, input } = elements;
   if (!isValid) {
     input.classList.add('is-invalid');
@@ -18,8 +18,8 @@ const handleForm = (elements, i18nextInstance, value) => {
   feedback.textContent = '';
 };
 
-const handleLoadingProcess = (elements, i18nextInstance, value) => {
-  const { status, error } = value;
+const handleLoadingProcess = (elements, initialState, i18nextInstance) => {
+  const { status, error } = initialState.loadingProcess;
   const {
     form,
     submit,
@@ -53,30 +53,34 @@ const handleLoadingProcess = (elements, i18nextInstance, value) => {
   }
 };
 
-const render = (elements, i18nextInstance, initialState) => (path, value) => {
+const handle = (elements, initialState, i18nextInstance) => (path, value) => {
   switch (path) {
     case 'form':
-      handleForm(elements, i18nextInstance, value);
+      handleForm(elements, initialState, i18nextInstance);
       break;
     case 'loadingProcess':
-      handleLoadingProcess(elements, i18nextInstance, value);
+      handleLoadingProcess(elements, initialState, i18nextInstance);
       break;
     case 'feeds':
-      renderFeeds(elements, i18nextInstance, value);
+      renderFeeds(elements, initialState, i18nextInstance);
       break;
     case 'posts':
-      renderPosts(elements, initialState, i18nextInstance, value);
+    case 'uiState.visitedPostsId':
+      renderPosts(elements, initialState, i18nextInstance);
       break;
     case 'uiState.postId':
-      renderModal(elements, i18nextInstance, initialState);
+      renderModal(elements, initialState, i18nextInstance);
       break;
     case 'lng':
       i18nextInstance.changeLanguage(value).then(() => {
         renderTranslate(elements, i18nextInstance, value);
-        renderPosts(elements, initialState, i18nextInstance, initialState.posts);
-        renderFeeds(elements, i18nextInstance, initialState.feeds);
-        handleForm(elements, i18nextInstance, initialState.form);
-        handleLoadingProcess(elements, i18nextInstance, initialState.loadingProcess);
+        renderPosts(elements, initialState, i18nextInstance);
+        renderFeeds(elements, initialState, i18nextInstance);
+        if (!initialState.form.isValid) {
+          handleForm(elements, initialState, i18nextInstance);
+        } else {
+          handleLoadingProcess(elements, initialState, i18nextInstance);
+        }
       });
       break;
     default:
@@ -84,7 +88,7 @@ const render = (elements, i18nextInstance, initialState) => (path, value) => {
   }
 };
 
-export default (initialState, elements, language) => onChange(
+export default (elements, initialState, i18nextInstance) => onChange(
   initialState,
-  render(elements, language, initialState),
+  handle(elements, initialState, i18nextInstance),
 );

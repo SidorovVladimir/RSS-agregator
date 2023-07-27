@@ -4,7 +4,7 @@ import axios from 'axios';
 import { uniqueId } from 'lodash';
 import resources from './locales/index.js';
 import customErrorMessage from './locales/customErrorMessage.js';
-import initView from './render/view.js';
+import watch from './watcher.js';
 import parseRss from './parser.js';
 
 const defaultLanguage = 'ru';
@@ -29,10 +29,10 @@ const handlerError = (error) => {
   }
 };
 
-const loadRss = (url, watchState) => {
-  watchState.loadingProcess = { status: 'loading', error: null };
+const loadRss = (url, watchedState) => {
+  watchedState.loadingProcess = { status: 'loading', error: null };
   const proxy = makeProxy(url);
-  const data = axios({
+  return axios({
     metod: 'get',
     url: proxy,
     timeout,
@@ -46,30 +46,29 @@ const loadRss = (url, watchState) => {
         post.id = uniqueId();
         post.feedId = feed.id;
       });
-      watchState.loadingProcess = { status: 'success', error: null };
-      watchState.feeds = [feed, ...watchState.feeds];
-      watchState.posts = [...posts, ...watchState.posts];
+      watchedState.loadingProcess = { status: 'success', error: null };
+      watchedState.feeds = [feed, ...watchedState.feeds];
+      watchedState.posts = [...posts, ...watchedState.posts];
     })
     .catch((error) => {
-      watchState.loadingProcess = { error: handlerError(error), status: 'failed' };
+      watchedState.loadingProcess = { error: handlerError(error), status: 'failed' };
     });
-  return data;
 };
 
-const updatePost = (watchState) => {
-  const requests = watchState.feeds.map((feed) => {
+const updatePost = (watchedState) => {
+  const requests = watchedState.feeds.map((feed) => {
     const { url, id } = feed;
     const request = axios.get(makeProxy(url))
       .then((response) => {
         const content = parseRss(response.data.contents);
         const { posts } = content;
-        const titles = watchState.posts.map((post) => post.title);
+        const titles = watchedState.posts.map((post) => post.title);
         const newPosts = posts.filter((newPost) => !titles.includes(newPost.title));
         newPosts.forEach((post) => {
           post.id = uniqueId();
           post.feedId = id;
         });
-        watchState.posts = [...newPosts, ...watchState.posts];
+        watchedState.posts = [...newPosts, ...watchedState.posts];
       })
       .catch((e) => {
         console.error(e);
@@ -77,7 +76,7 @@ const updatePost = (watchState) => {
     return request;
   });
   return Promise.all(requests)
-    .then(() => setTimeout(() => updatePost(watchState), timeUpdate));
+    .then(() => setTimeout(() => updatePost(watchedState), timeUpdate));
 };
 
 const validate = (url, urls) => {
@@ -140,7 +139,7 @@ export default () => {
 
       yup.setLocale(customErrorMessage);
 
-      const watchState = initView(initialState, elements, i18nextInstance);
+      const watchedState = watch(elements, initialState, i18nextInstance);
 
       elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -152,28 +151,28 @@ export default () => {
         validate(url, urls)
           .then((error) => {
             if (error) {
-              watchState.form = { isValid: false, error: error.message };
+              watchedState.form = { isValid: false, error: error.message };
               return;
             }
-            watchState.form = { isValid: true, error: null };
-            loadRss(url, watchState);
+            watchedState.form = { isValid: true, error: null };
+            loadRss(url, watchedState);
           });
       });
 
-      setTimeout(() => updatePost(watchState), timeUpdate);
+      setTimeout(() => updatePost(watchedState), timeUpdate);
 
       elements.posts.addEventListener('click', (e) => {
         const { id } = e.target.dataset;
         if (id) {
-          watchState.uiState.postId = id;
-          initialState.uiState.visitedPostsId.add(id);
+          watchedState.uiState.postId = id;
+          watchedState.uiState.visitedPostsId.add(id);
         }
       });
 
       elements.languageMenu.addEventListener('click', (e) => {
         const { lng } = e.target.dataset;
         if (lng) {
-          watchState.lng = lng;
+          watchedState.lng = lng;
         }
       });
     });

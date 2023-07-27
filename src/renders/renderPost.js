@@ -1,5 +1,5 @@
-export default (elements, initialState, i18nextInstance, posts) => {
-  if (posts.length === 0) return;
+export default (elements, initialState, i18nextInstance) => {
+  if (initialState.posts.length === 0) return;
 
   elements.posts.innerHTML = '';
   const card = document.createElement('div');
@@ -15,7 +15,7 @@ export default (elements, initialState, i18nextInstance, posts) => {
   const listGroup = document.createElement('ul');
   listGroup.classList.add('list-group', 'border-0', 'rounded-0');
 
-  posts.forEach((post) => {
+  initialState.posts.forEach((post) => {
     const listGroupItem = document.createElement('li');
     listGroupItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
 

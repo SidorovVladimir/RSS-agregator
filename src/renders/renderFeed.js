@@ -1,5 +1,5 @@
-export default (elements, i18nextInstance, feeds) => {
-  if (feeds.length === 0) return;
+export default (elements, initialState, i18nextInstance) => {
+  if (initialState.feeds.length === 0) return;
 
   elements.feeds.innerHTML = '';
   const card = document.createElement('div');
@@ -15,7 +15,7 @@ export default (elements, i18nextInstance, feeds) => {
   const listGroup = document.createElement('ul');
   listGroup.classList.add('list-group', 'border-0', 'rounded-0');
 
-  feeds.forEach((feed) => {
+  initialState.feeds.forEach((feed) => {
     const listGroupItem = document.createElement('li');
     listGroupItem.classList.add('list-group-item', 'border-0', 'border-end-0');
 
