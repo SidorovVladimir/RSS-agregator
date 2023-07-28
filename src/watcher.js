@@ -65,10 +65,10 @@ const handle = (elements, initialState, i18nextInstance) => (path, value) => {
       renderFeeds(elements, initialState, i18nextInstance);
       break;
     case 'posts':
-    case 'uiState.visitedPostsId':
+    case 'ui.visitedPosts':
       renderPosts(elements, initialState, i18nextInstance);
       break;
-    case 'uiState.postId':
+    case 'ui.postId':
       renderModal(elements, initialState, i18nextInstance);
       break;
     case 'lng':

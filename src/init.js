@@ -12,10 +12,10 @@ const timeUpdate = 5000;
 const timeout = 10000;
 
 const makeProxy = (url) => {
-  const urlWithProxy = new URL('/get', 'https://allorigins.hexlet.app');
-  urlWithProxy.searchParams.append('disableCache', 'true');
-  urlWithProxy.searchParams.append('url', url);
-  return urlWithProxy.toString();
+  const proxiedUrl = new URL('/get', 'https://allorigins.hexlet.app');
+  proxiedUrl.searchParams.append('disableCache', 'true');
+  proxiedUrl.searchParams.append('url', url);
+  return proxiedUrl.toString();
 };
 
 const handlerError = (error) => {
@@ -31,10 +31,9 @@ const handlerError = (error) => {
 
 const loadRss = (url, watchedState) => {
   watchedState.loadingProcess = { status: 'loading', error: null };
-  const proxy = makeProxy(url);
   return axios({
     metod: 'get',
-    url: proxy,
+    url: makeProxy(url),
     timeout,
   })
     .then((response) => {
@@ -110,9 +109,9 @@ export default () => {
         },
         feeds: [],
         posts: [],
-        uiState: {
+        ui: {
           postId: '',
-          visitedPostsId: new Set(),
+          visitedPosts: new Set(),
         },
       };
 
@@ -164,8 +163,8 @@ export default () => {
       elements.posts.addEventListener('click', (e) => {
         const { id } = e.target.dataset;
         if (id) {
-          watchedState.uiState.postId = id;
-          watchedState.uiState.visitedPostsId.add(id);
+          watchedState.ui.postId = id;
+          watchedState.ui.visitedPosts.add(id);
         }
       });
 

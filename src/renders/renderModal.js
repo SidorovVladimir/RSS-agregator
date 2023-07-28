@@ -6,7 +6,7 @@ export default (elements, initialState, i18nextInstance) => {
     closeButton,
   } = elements.modal;
 
-  const currentPost = initialState.posts.find((post) => post.id === initialState.uiState.postId);
+  const currentPost = initialState.posts.find((post) => post.id === initialState.ui.postId);
   title.textContent = currentPost.title;
   description.textContent = currentPost.description;
   linkButton.setAttribute('href', `${currentPost.link}`);

@@ -27,7 +27,7 @@ export default (elements, initialState, i18nextInstance) => {
     linkItem.setAttribute('data-feed_id', `${post.feedId}`);
     linkItem.textContent = post.title;
 
-    if (initialState.uiState.visitedPostsId.has(post.id)) {
+    if (initialState.ui.visitedPosts.has(post.id)) {
       linkItem.classList.add('fw-normal', 'link-secondary');
     } else {
       linkItem.classList.add('fw-bold');
