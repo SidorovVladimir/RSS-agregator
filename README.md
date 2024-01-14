@@ -13,12 +13,12 @@ RSS aggregator is an application that allows you to read RSS feeds from an unlim
 1. Clone the application repository with the command:
 
 ```
-git clone git@github.com:SidorovVladimir/frontend-project-11.git
+git clone git@github.com:SidorovVladimir/RSS-agregator.git
 ```
 2. Go to the directory using the command:
 
 ```
-cd frontend-project-11
+cd RSS-agregator
 ```
 
 3. Install the dependencies with the command:
