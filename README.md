@@ -36,4 +36,4 @@ make develop
 ```
 make build
 ```
-#### Demo link: [*RSS agregator*](https://frontend-project-11-three-tau.vercel.app/) ####
+#### Demo link: [*RSS agregator*](https://rss-agregator-one.vercel.app/) ####
