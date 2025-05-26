@@ -9,9 +9,9 @@ export default {
     },
     form: {
       title: 'RSS aggregator',
-      subtitle: 'Start reading RSS today! It\'s easy, it\'s beautiful.',
+      subtitle: "Start reading RSS today! It's easy, it's beautiful.",
       labelInput: 'RSS Link',
-      exampleUrl: 'Example: https://ru.hexlet.io/lessons.rss',
+      exampleUrl: 'Example: https://elementy.ru/rss/news/it',
       rssLoadSucces: 'RSS load success',
       submit: 'Added',
     },

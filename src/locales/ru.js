@@ -11,7 +11,7 @@ export default {
       title: 'RSS агрегатор',
       subtitle: 'Начните читать RSS сегодня! Это легко, это красиво.',
       labelInput: 'Ссылка RSS',
-      exampleUrl: 'Пример: https://ru.hexlet.io/lessons.rss',
+      exampleUrl: 'Пример: https://elementy.ru/rss/news/it',
       rssLoadSucces: 'RSS успешно загружен',
       submit: 'Добавить',
     },
