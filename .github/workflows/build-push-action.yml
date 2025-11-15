@@ -5,8 +5,8 @@ on:
     branches:
       - 'main'
 
-env:
-  TEST_TAG: diabloboom/rss:test
+# env:
+#   TEST_TAG: diabloboom/rss:test
 
 jobs:
   docker:
@@ -21,12 +21,12 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Cache
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          load: true
-          tags: ${{ env.TEST_TAG }}
+      # - name: Cache
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     load: true
+      #     tags: ${{ env.TEST_TAG }}
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
