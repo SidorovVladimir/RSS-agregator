@@ -13,4 +13,4 @@ develop:
 build:
 	NODE_ENV=production npx webpack
 deploy:
-	ansible-playbook ansible/release.yml -i ansible/inventory.ini -u diabloboom -vv --extra-vars "version=latest" -K
+	ansible-playbook ansible/playbook/deploy.yml -vv --extra-vars "version=$(VERSION)" -K

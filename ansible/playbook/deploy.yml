@@ -1,0 +1,47 @@
+- hosts: diabloboom
+  tasks:
+    - name: Create Network
+      community.docker.docker_network:
+        name: rss-agregator
+        driver: bridge
+      become: true
+
+    - name: Create Caddy data volume
+      community.docker.docker_volume:
+        name: caddy_data
+      become: true
+
+    - name: Create Caddy config volume
+      community.docker.docker_volume:
+        name: caddy_config
+      become: true
+
+    - name: Deploy docker
+      community.docker.docker_container:
+        name: rss
+        image: diabloboom/rss:{{ version }}
+        restart_policy: always
+        state: started
+        networks:
+          name: rss-agregator
+        # ports:
+        # - 5000:5000
+        env:
+          NODE_ENV: production
+      become: true
+
+    - name: Deploy caddy
+      community.docker.docker_container:
+        name: caddy
+        image: 'diabloboom/rss-caddy:{{ version }}'
+        restart_policy: always
+        state: started
+        networks:
+          name: rss-agregator
+        ports:
+          - 80:80
+          - 443:443
+        volumes:
+          - caddy_data:/data
+          - caddy_config:/config
+      become: true

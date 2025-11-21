@@ -37,12 +37,12 @@ jobs:
           tags: diabloboom/rss:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      # - name: Build and push caddy
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: .
-      #     file: services/caddy/Dockerfile
-      #     push: true
-      #     tags: diabloboom-caddy:latest
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
+      - name: Build and push caddy
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/caddy/Dockerfile
+          push: true
+          tags: diabloboom/rss-caddy:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
