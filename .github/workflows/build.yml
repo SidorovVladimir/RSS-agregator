@@ -26,7 +26,9 @@ jobs:
         run: make build
 
       - name: Create dist.zip
-        run: zip -r dist.zip dist/
+        run: |
+          cd dist
+          zip -r ../dist.zip .
 
       - name: Publish to GitHub Release
         uses: softprops/action-gh-release@v2
