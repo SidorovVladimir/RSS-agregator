@@ -1,6 +1,0 @@
-all:
-  children:
-    webservers:
-      hosts:
-        diabloboom:
-          ansible_host: rss.idevspace.ru

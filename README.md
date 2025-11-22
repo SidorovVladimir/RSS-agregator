@@ -1,6 +1,6 @@
-### Linter status:
+### Linter and Build status:
 
-[![Action-linter](https://github.com/SidorovVladimir/frontend-project-11/actions/workflows/action-linter.yml/badge.svg)](https://github.com/SidorovVladimir/frontend-project-11/actions/workflows/action-linter.yml)
+[![Linter](https://github.com/SidorovVladimir/frontend-project-11/actions/workflows/action-linter.yml/badge.svg)](https://github.com/SidorovVladimir/frontend-project-11/actions/workflows/action-linter.yml)[![Build](https://github.com/SidorovVladimir/frontend-project-11/actions/workflows/build.yml/badge.svg)](https://github.com/SidorovVladimir/frontend-project-11/actions/workflows/build.yml)
 
 ### Code Climate tests status:
 

@@ -12,5 +12,3 @@ develop:
 	npx webpack serve
 build:
 	NODE_ENV=production npx webpack
-deploy:
-	ansible-playbook ansible/playbook/deploy.yml -vv --extra-vars "version=$(VERSION)" -K

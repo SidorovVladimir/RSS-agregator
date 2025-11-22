@@ -1,8 +1,0 @@
-rss.idevspace.ru {
-   handle {
-      reverse_proxy rss:5000
-    }
-  log {
-    format json
-  }
-}
